@@ -59,6 +59,12 @@
           <div class="game-item active" data-game="snake"><strong>Snake</strong><div class="meta">Arrow keys / WASD — Classic</div></div>
           <div class="game-item" data-game="breakout"><strong>Breakout</strong><div class="meta">Mouse or touch — Paddle & ball</div></div>
           <div class="game-item" data-game="about"><strong>About / Instructions</strong><div class="meta">How to host & legal notes</div></div>
+          <!-- add inside .game-list -->
+<div class="game-item" data-game="cookie">
+  <strong>Cookie Clicker</strong>
+  <div class="meta">Click the cookie — buy upgrades & autosave</div>
+</div>
+
         </div>
       </nav>
 
@@ -76,6 +82,45 @@
 
           <!-- Breakout canvas (hidden until selected) -->
           <canvas id="breakoutCanvas" width="640" height="480" style="display:none"></canvas>
+          <!-- add inside .canvas-wrap, next to other canvases/panels -->
+<div id="cookiePanel" style="display:none; max-width:780px; color:var(--muted); padding:18px;">
+  <h3>Cookie Clicker</h3>
+
+  <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;">
+    <div style="flex:0 0 260px; text-align:center;">
+      <button id="bigCookie" style="
+        width:220px;height:220px;border-radius:50%;
+        border:none;box-shadow:0 8px 20px rgba(0,0,0,0.5) inset;
+        font-size:20px;cursor:pointer;background:radial-gradient(circle at 30% 30%, #ffd27a, #f6b041);
+      ">🍪</button>
+      <div style="margin-top:8px;font-size:18px;color:var(--muted);" id="cookieClickHint">Click me!</div>
+    </div>
+
+    <div style="flex:1;min-width:260px;">
+      <div style="font-size:20px;margin-bottom:6px;">
+        Cookies: <span id="cookieCount">0</span>
+      </div>
+      <div style="color:var(--muted);margin-bottom:12px;">
+        CPS: <span id="cookieCPS">0</span> — Click value: <span id="cookieClickValue">1</span>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <strong>Upgrades</strong>
+        <div id="upgradesList" style="display:flex;flex-direction:column;gap:8px;margin-top:8px;"></div>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button id="saveCookies" class="btn">Save Now</button>
+        <button id="resetCookies" class="btn">Reset</button>
+      </div>
+
+      <div style="margin-top:12px;color:var(--muted);font-size:13px;">
+        Progress is stored in your browser automatically. Use the Reset button to clear.
+      </div>
+    </div>
+  </div>
+</div>
+
 
           <!-- About panel -->
           <div id="aboutPanel" style="display:none;max-width:780px;padding:18px;color:var(--muted)">
@@ -126,6 +171,45 @@
     if(name==='snake') startSnake();
     if(name==='breakout') startBreakout();
   }
+    <!-- add inside .canvas-wrap, next to other canvases/panels -->
+<div id="cookiePanel" style="display:none; max-width:780px; color:var(--muted); padding:18px;">
+  <h3>Cookie Clicker</h3>
+
+  <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;">
+    <div style="flex:0 0 260px; text-align:center;">
+      <button id="bigCookie" style="
+        width:220px;height:220px;border-radius:50%;
+        border:none;box-shadow:0 8px 20px rgba(0,0,0,0.5) inset;
+        font-size:20px;cursor:pointer;background:radial-gradient(circle at 30% 30%, #ffd27a, #f6b041);
+      ">🍪</button>
+      <div style="margin-top:8px;font-size:18px;color:var(--muted);" id="cookieClickHint">Click me!</div>
+    </div>
+
+    <div style="flex:1;min-width:260px;">
+      <div style="font-size:20px;margin-bottom:6px;">
+        Cookies: <span id="cookieCount">0</span>
+      </div>
+      <div style="color:var(--muted);margin-bottom:12px;">
+        CPS: <span id="cookieCPS">0</span> — Click value: <span id="cookieClickValue">1</span>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <strong>Upgrades</strong>
+        <div id="upgradesList" style="display:flex;flex-direction:column;gap:8px;margin-top:8px;"></div>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button id="saveCookies" class="btn">Save Now</button>
+        <button id="resetCookies" class="btn">Reset</button>
+      </div>
+
+      <div style="margin-top:12px;color:var(--muted);font-size:13px;">
+        Progress is stored in your browser automatically. Use the Reset button to clear.
+      </div>
+    </div>
+  </div>
+</div>
+
 
   document.getElementById('resetAll').addEventListener('click',()=>{
     localStorage.removeItem('snake_high');
