@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Play — Simple Game Hub</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#7dd3fc;--muted:#94a3b8;--glass:rgba(255,255,255,0.04)}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    body{background:linear-gradient(180deg,#071021 0%,var(--bg) 100%);color:#e6eef6;display:flex;align-items:center;justify-content:center;padding:24px}
+    .wrap{width:100%;max-width:1100px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#60a5fa);display:flex;align-items:center;justify-content:center;font-weight:700;color:#04202b}
+    h1{margin:0;font-size:20px}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+
+    .grid{display:grid;grid-template-columns:280px 1fr;gap:18px}
+    nav{background:var(--card);border-radius:12px;padding:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+    .game-list{display:flex;flex-direction:column;gap:8px}
+    .game-item{padding:10px;border-radius:8px;background:var(--glass);cursor:pointer;border:1px solid rgba(255,255,255,0.02);display:flex;align-items:center;gap:8px}
+    .game-item:hover{transform:translateY(-3px)}
+    .game-item.active{outline:2px solid rgba(125,211,252,0.14);background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent)}
+    .meta{font-size:12px;color:var(--muted)}
+
+    main{background:var(--card);border-radius:12px;padding:14px;min-height:480px;box-shadow:0 6px 18px rgba(2,6,23,0.6);display:flex;flex-direction:column}
+    .toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+    .info{font-size:13px;color:var(--muted)}
+    .canvas-wrap{flex:1;display:flex;align-items:center;justify-content:center;position:relative}
+
+    canvas{background:#061018;border-radius:8px;max-width:100%;box-shadow:inset 0 2px 6px rgba(0,0,0,0.6)}
+
+    footer{margin-top:12px;color:var(--muted);font-size:12px}
+    .btn{background:transparent;border:1px solid rgba(125,211,252,0.14);padding:8px 10px;border-radius:8px;cursor:pointer}
+    @media(max-width:880px){.grid{grid-template-columns:1fr;}.logo{display:none}}
+
+    /* small help box */
+    .note{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:8px;padding:10px;margin-top:12px;color:var(--muted);font-size:13px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo">G</div>
+        <div>
+          <h1>Play — Mini Games Hub</h1>
+          <p class="lead">Two tiny HTML5 games included (Snake, Breakout). Works in modern browsers.</p>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="resetAll">Reset Scores</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <nav>
+        <div class="game-list" id="gameList">
+          <div class="game-item active" data-game="snake"><strong>Snake</strong><div class="meta">Arrow keys / WASD — Classic</div></div>
+          <div class="game-item" data-game="breakout"><strong>Breakout</strong><div class="meta">Mouse or touch — Paddle & ball</div></div>
+          <div class="game-item" data-game="about"><strong>About / Instructions</strong><div class="meta">How to host & legal notes</div></div>
+        </div>
+      </nav>
+
+      <main>
+        <div class="toolbar">
+          <div class="info" id="gameTitle">Snake</div>
+          <div>
+            <span id="scoreBadge">Score: 0</span>
+          </div>
+        </div>
+
+        <div class="canvas-wrap">
+          <!-- Snake canvas -->
+          <canvas id="snakeCanvas" width="640" height="480"></canvas>
+
+          <!-- Breakout canvas (hidden until selected) -->
+          <canvas id="breakoutCanvas" width="640" height="480" style="display:none"></canvas>
+
+          <!-- About panel -->
+          <div id="aboutPanel" style="display:none;max-width:780px;padding:18px;color:var(--muted)">
+            <h3>About this page</h3>
+            <p>This single-file site includes two small, open implementations of classic browser games (no external dependencies). You can host this file on any static host (GitHub Pages, Netlify, Vercel, or your own web host).</p>
+            <h4>Hosting</h4>
+            <ul>
+              <li>GitHub Pages — create a repo, add this file as <code>index.html</code>, enable Pages in repo settings.</li>
+              <li>Netlify / Vercel — drag & drop the file or link the repo; many have free tiers.</li>
+              <li>Your own server — place <code>index.html</code> in the web root.</li>
+            </ul>
+            <h4>Legal & Etiquette</h4>
+            <p>Don't upload copyrighted games you don't own. Respect your network's acceptable-use policy — I can't help you bypass school or workplace filters.</p>
+          </div>
+        </div>
+
+        <footer>
+          <div class="note">Tip: Use a mobile browser with landscape orientation for best results. Want more games or features (leaderboards, multiplayer)? Ask and I’ll add them.</div>
+        </footer>
+      </main>
+    </div>
+  </div>
+
+  <script>
+  // --- Basic UI switching ---
+  const items = document.querySelectorAll('.game-item');
+  const snakeCanvas = document.getElementById('snakeCanvas');
+  const breakoutCanvas = document.getElementById('breakoutCanvas');
+  const aboutPanel = document.getElementById('aboutPanel');
+  const gameTitle = document.getElementById('gameTitle');
+  const scoreBadge = document.getElementById('scoreBadge');
+  let currentGame = 'snake';
+
+  items.forEach(it=>it.addEventListener('click',()=>{
+    items.forEach(i=>i.classList.remove('active'));
+    it.classList.add('active');
+    selectGame(it.dataset.game);
+  }));
+
+  function selectGame(name){
+    currentGame = name;
+    gameTitle.textContent = name.charAt(0).toUpperCase()+name.slice(1);
+    scoreBadge.textContent = 'Score: 0';
+    snakeCanvas.style.display = name==='snake' ? '' : 'none';
+    breakoutCanvas.style.display = name==='breakout' ? '' : 'none';
+    aboutPanel.style.display = name==='about' ? '' : 'none';
+    // reset game states
+    if(name==='snake') startSnake();
+    if(name==='breakout') startBreakout();
+  }
+
+  document.getElementById('resetAll').addEventListener('click',()=>{
+    localStorage.removeItem('snake_high');
+    localStorage.removeItem('breakout_high');
+    alert('Scores reset');
+    scoreBadge.textContent = 'Score: 0';
+  });
+
+  // --- Simple Snake Implementation ---
+  function startSnake(){
+    const canvas = snakeCanvas;
+    const ctx = canvas.getContext('2d');
+    const grid = 20; // size of cell
+    let cols = Math.floor(canvas.width / grid);
+    let rows = Math.floor(canvas.height / grid);
+
+    let snake = [{x:Math.floor(cols/2), y:Math.floor(rows/2)}];
+    let dir = {x:1,y:0};
+    let food = spawnFood();
+    let score = 0;
+    let tick;
+
+    document.onkeydown = (e)=>{
+      const k = e.key;
+      if((k==='ArrowUp' || k==='w') && dir.y===0) dir={x:0,y:-1};
+      if((k==='ArrowDown' || k==='s') && dir.y===0) dir={x:0,y:1};
+      if((k==='ArrowLeft' || k==='a') && dir.x===0) dir={x:-1,y:0};
+      if((k==='ArrowRight' || k==='d') && dir.x===0) dir={x:1,y:0};
+    };
+
+    function spawnFood(){
+      return {x:Math.floor(Math.random()*cols), y:Math.floor(Math.random()*rows)};
+    }
+
+    function reset(){
+      snake = [{x:Math.floor(cols/2), y:Math.floor(rows/2)}]; dir={x:1,y:0}; food=spawnFood(); score=0; scoreBadge.textContent='Score: '+score;
+    }
+
+    function step(){
+      const head = {x:snake[0].x+dir.x, y:snake[0].y+dir.y};
+      // wrap around
+      head.x = (head.x+cols)%cols; head.y = (head.y+rows)%rows;
+      // collision with self
+      if(snake.some(s=>s.x===head.x && s.y===head.y)) { clearInterval(tick); alert('Game over — final score: '+score); return }
+      snake.unshift(head);
+      if(head.x===food.x && head.y===food.y){ score++; food=spawnFood(); scoreBadge.textContent='Score: '+score; }
+      else snake.pop();
+      draw();
+    }
+
+    function draw(){
+      ctx.clearRect(0,0,canvas.width, canvas.height);
+      // grid background (subtle)
+      // draw snake
+      for(let s of snake){ ctx.fillStyle='#7dd3fc'; ctx.fillRect(s.x*grid+1, s.y*grid+1, grid-2, grid-2); }
+      // draw food
+      ctx.fillStyle='#f97316'; ctx.fillRect(food.x*grid+3, food.y*grid+3, grid-6, grid-6);
+    }
+
+    // start loop
+    if(window.snakeInterval) clearInterval(window.snakeInterval);
+    window.snakeInterval = setInterval(step, 120);
+    tick = window.snakeInterval;
+  }
+
+  // --- Simple Breakout Implementation ---
+  function startBreakout(){
+    const canvas = breakoutCanvas;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    let paddle = {w:120,h:12,x:(W-120)/2,y:H-40};
+    let ball = {x:W/2,y:H/2,r:8,vx:4,vy:-4};
+    let bricks = [];
+    let rows = 5, cols = 8; let brickW = Math.floor((W-80)/cols); let brickH=18; let score=0;
+
+    function initBricks(){
+      bricks = [];
+      for(let r=0;r<rows;r++){
+        for(let c=0;c<cols;c++){
+          bricks.push({x:40+c*(brickW+6), y:40+r*(brickH+6), w:brickW, h:brickH, alive:true});
+        }
+      }
+    }
+
+    function draw(){
+      ctx.clearRect(0,0,W,H);
+      // paddle
+      ctx.fillStyle='#60a5fa'; ctx.fillRect(paddle.x,paddle.y,paddle.w,paddle.h);
+      // ball
+      ctx.beginPath(); ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2); ctx.fillStyle='#f97316'; ctx.fill(); ctx.closePath();
+      // bricks
+      for(let b of bricks) if(b.alive){ ctx.fillStyle='#7dd3fc'; ctx.fillRect(b.x,b.y,b.w,b.h); }
+    }
+
+    function step(){
+      ball.x += ball.vx; ball.y += ball.vy;
+      // walls
+      if(ball.x<ball.r || ball.x>W-ball.r) ball.vx *= -1;
+      if(ball.y<ball.r) ball.vy *= -1;
+      // paddle collision
+      if(ball.y+ball.r >= paddle.y && ball.x > paddle.x && ball.x < paddle.x+paddle.w){ ball.vy = -Math.abs(ball.vy); }
+      // bottom
+      if(ball.y>H+20){ alert('Ball lost — score: '+score); reset(); }
+      // bricks
+      for(let b of bricks){
+        if(!b.alive) continue;
+        if(ball.x > b.x && ball.x < b.x+b.w && ball.y - ball.r < b.y+b.h && ball.y + ball.r > b.y){ b.alive=false; ball.vy *= -1; score++; scoreBadge.textContent='Score: '+score; }
+      }
+      draw();
+      // win check
+      if(bricks.every(b=>!b.alive)){ alert('You cleared all bricks! Score: '+score); reset(); }
+    }
+
+    function reset(){ initBricks(); ball={x:W/2,y:H/2,r:8,vx:4,vy:-4}; paddle.x=(W-paddle.w)/2; score=0; scoreBadge.textContent='Score: '+score; }
+
+    // mouse / touch control
+    canvas.onmousemove = (e)=>{ const rect = canvas.getBoundingClientRect(); const mx = e.clientX - rect.left; paddle.x = Math.min(Math.max(mx - paddle.w/2, 0), W - paddle.w); }
+    canvas.ontouchmove = (e)=>{ const rect = canvas.getBoundingClientRect(); const t = e.touches[0]; const mx = t.clientX - rect.left; paddle.x = Math.min(Math.max(mx - paddle.w/2, 0), W - paddle.w); }
+
+    initBricks(); if(window.breakInterval) clearInterval(window.breakInterval); window.breakInterval = setInterval(step, 20);
+  }
+
+  // start default game
+  startSnake();
+
+  // expose selectGame globally for convenience (dev)
+  window.selectGame = selectGame;
+  </script>
+</body>
+</html>
